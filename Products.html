@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adidas Store</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+    <script type = "text/javascript"> 
+      
+        // DATOS PARA TABLAS DE API SQLWEB
+  
+        const productos =[
+           {nombre: 'Zapatos Deportivos Negros', precio: 350.00, locimg: 'imagenes/Productos/img1.jpg'},
+           {nombre: 'Combo Adidas Plus', precio: 850.00, locimg: 'imagenes/Productos/img2.jpg'},
+           {nombre: 'Sueter Celeste Adidas Jump', precio: 750.00, locimg: 'imagenes/Productos/img3.jpg'},
+           {nombre: 'Sueter deportivo Adidas', precio: 950.00, locimg: 'imagenes/Productos/img4.jpg'},
+           {nombre: 'Sueter Connor Adidas negro', precio: 350.00, locimg: 'imagenes/Productos/img5.jpg'},
+           {nombre: 'Rodilleras', precio: 450.00, locimg: 'imagenes/Productos/img6.png'},
+           {nombre: 'Pantaloneta Gris', precio: 750.00, locimg: 'imagenes/Productos/img7.jpg'},
+           {nombre: 'Pantaloneta Beige', precio: 400.00, locimg: 'imagenes/Productos/img8.jpg'}
+        ]
+        
+        const detalleProd =[
+           {nombre: 'Zapatos Deportivos Negros', talla: 'X', disponibilidad: 3, idProd: 1},
+           {nombre: 'Zapatos Deportivos Negros', talla: 'M', disponibilidad: 4, idProd: 1},
+           {nombre: 'Zapatos Deportivos Negros', talla: 'L', disponibilidad: 5, idProd: 1},
+           {nombre: 'Combo Adidas Plus',  talla: 'X', disponibilidad: 7, idProd: 2},
+           {nombre: 'Combo Adidas Plus',  talla: 'M', disponibilidad: 8, idProd: 2},
+           {nombre: 'Combo Adidas Plus',  talla: 'L', disponibilidad: 9, idProd: 2},
+           {nombre: 'Sueter Celeste Adidas Jump', talla: 'X', disponibilidad: 1, idProd: 3},
+           {nombre: 'Sueter Celeste Adidas Jump', talla: 'M', disponibilidad: 6, idProd: 3},
+           {nombre: 'Sueter Celeste Adidas Jump', talla: 'L', disponibilidad: 3, idProd: 3},
+           {nombre: 'Sueter deportivo Adidas', talla: 'X', disponibilidad: 5, idProd: 4},
+           {nombre: 'Sueter deportivo Adidas', talla: 'M', disponibilidad: 8, idProd: 4},
+           {nombre: 'Sueter deportivo Adidas', talla: 'L', disponibilidad: 1, idProd: 4},
+           {nombre: 'Sueter Connor Adidas negro', talla: 'X', disponibilidad: 3, idProd: 5},
+           {nombre: 'Sueter Connor Adidas negro', talla: 'M', disponibilidad: 5, idProd: 5},
+           {nombre: 'Sueter Connor Adidas negro', talla: 'L', disponibilidad: 9, idProd: 5},
+           {nombre: 'Rodilleras', talla: 'X', disponibilidad: 10, idProd: 6},
+           {nombre: 'Rodilleras', talla: 'M', disponibilidad: 11, idProd: 6},
+           {nombre: 'Rodilleras', talla: 'L', disponibilidad: 12, idProd: 6},
+           {nombre: 'Pantaloneta Gris',talla: 'X', disponibilidad: 1, idProd: 7},
+           {nombre: 'Pantaloneta Gris',talla: 'M', disponibilidad: 2, idProd: 7},
+           {nombre: 'Pantaloneta Gris',talla: 'L', disponibilidad: 7, idProd: 7},
+           {nombre: 'Pantaloneta Beige', talla: 'X', disponibilidad: 3, idProd: 8},
+           {nombre: 'Pantaloneta Beige', talla: 'M', disponibilidad: 1, idProd: 8},
+           {nombre: 'Pantaloneta Beige', talla: 'L', disponibilidad: 1, idProd: 8}
+        ] 
+  
+         //var del = dropDatabase("TiendaVirtual", function(){console.log("done")});
+           
+        // GENERA BASE DE DATOS
+                  //openDatabase('nombre_bd', 'version', 'descripcion_bd', tamanio) 
+           var db = openDatabase('TiendaVirtual', '1.0', 'Esta es mi tienda virutal', 2 * 1024 * 1024); 
+  
+          
+        // VAIRABLES   
+          var msg;
+          var sql; 
+          
+     
+          db.transaction
+          (
+           function (tx)
+             {
+                //ELIMINA LAS TABLAS SI YA EXISTEN
+                 tx.executeSql('DROP TABLE IF EXISTS Productos');
+                 tx.executeSql('DROP TABLE IF EXISTS DetalleProducto');
+  
+  
+                 //SCRIPT PARA LA CREACION DE LAS TABLAS
+                 sql = "CREATE TABLE IF NOT EXISTS Productos " +
+                 "(idProducto INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                 "nombre VARCHAR[50] NOT NULL, "+
+                 "precio DEC(5,2) NOT NULL, "+
+                 "imagen VARCHAR[50] NOT NULL)";
+                 tx.executeSql(sql);
+  
+                 sql = "CREATE TABLE IF NOT EXISTS DetalleProducto " +
+                 "(idDetProd INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                 "talla VARCHAR[2] NOT NULL, "+
+                 "disponibilidad INT(5) NOT NULL, "+
+                 "idProductos INTEGER NOT NULL, "+         
+                 "CONSTRAINT fk_DetalleProducto FOREIGN KEY (idProductos) " +
+                 "REFERENCES Productos(idProducto))";
+                 tx.executeSql(sql);
+                 
+                 //OBTIENE DATOS PARA TABLA PRODUCTOS
+                 for (let p of productos)
+                 {
+                    sql = "INSERT INTO Productos (nombre, precio, imagen) VALUES (?,?,?)"; //QUERY PARA INSERTAR 
+                    //executesql(query, objetos, handler_ok, handler_error);
+                    tx.executeSql(sql,[p.nombre, p.precio, p.locimg],
+                    function(){console.log("Se anadio: " + sql);}, 
+                    function(tx, err){console.log("ERROR: " + sql + " " + err.message);});
+                 }
+  
+                 //OBTIENE DATOS PARA TABLA PRODUCTOS
+                 for (let dp of detalleProd)
+                 {
+                    sql = "INSERT INTO DetalleProducto (talla, disponibilidad, idProductos) VALUES (?,?,?)"; //QUERY PARA INSERTAR
+                    //executesql(query, objetos, handler_ok, handler_error);
+                    tx.executeSql(sql, [dp.talla, dp.disponibilidad, dp.idProd], 
+                    function(){console.log("Se anadio: " + sql);}, 
+                    function(tx, err){console.log("ERROR: " + sql + " " + err.message);});
+                 }
+  
+                 /*tx.executeSql('INSERT INTO LOGS (id, log) VALUES (1, "foobar")'); 
+                 tx.executeSql('INSERT INTO LOGS (id, log) VALUES (2, "logmsg")'); 
+                 msg = '<p>Log message created and row inserted.</p>'; 
+                 document.querySelector('#status').innerHTML =  msg; */
+  
+              }, function(e){ console.log(err.message);}
+  
+           );// FIN DE CREACION DE DB E INSERCIONES
+  
+           db.transaction(function (tx) { 
+             tx.executeSql('SELECT * FROM Productos', [], function (tx, results) { 
+                var len = results.rows.length, i; 
+                //msg = "<p>Found rows: " + len + "</p>"; 
+                //document.querySelector('#status').innerHTML +=  msg; 
+       
+                for (i = 0; i < len; i++) { 
+                   /*parthtml = " <div class='producto'> "  + 
+                                   "<div class='tituloProd'>" + results.rows.item(i).nombre + 
+                                   "</br> <img src='" + results.rows.item(i).imagen +    "'></div> " +
+                                   "<div class='precioProd'> Precio:  Q. " + results.rows.item(i).precio + "</br> "+ 
+                                                              "<div class='contenedor-tallas'> " + 
+                                                                    "<div>Tallas: </div>"    + 
+                                                                    "<div class='tallas'>X</div>"    + 
+                                                                    "<div class='tallas'>M</div>" +  
+                                                                    "<div class='tallas'>L</div>"   + 
+                                                              "</div>" +
+                                   "</div> "
+                                "</div>";*/
+                    parthtml = "<div class='product-box'> "+
+                                    "<img draggable='true' ondragstart='drag(event)' src='" + results.rows.item(i).imagen + "'' alt='' class='product-img'> " +
+                                    "<h2 class='product-title'>"+ results.rows.item(i).nombre +"</h2> " +
+                                    "<span class='price'>Q" +results.rows.item(i).precio+"</span>&nbsp;&nbsp; "+ 
+                                    "<i class='bx bx-shopping-bag add-cart' onclick='addCartClicked(event)'></i> "+
+                                "</div>"            
+                   //$("#productos").append(parthtml);
+                   document.querySelector('#idshop-content').innerHTML +=  parthtml; 
+                } 
+             }, null); 
+           }); 
+       </script> 
+</head>
+<body>
+    <header>
+        <div class="nav container">
+            <a href="frontpage.html" class="logo"><img src="img/images.png" width="60" height="60"></a>
+            <a href="frontpage.html" class="logo">Inicio</a>
+            <a href="Login.html" class="login">Iniciar Sesión</a>
+            <i class='bx bx-shopping-bag' id="cart-icon"></i>
+            <div class="cart">
+                <h2 class="cart-title">Tus Compras</h2>
+                <div id="boxes" class="boxes shop-cart" ondragover="allowDrop(event)" ondrop="drop(event)" >
+                </div>     
+                <div class="cart-content">
+                </div>
+                <div class="total">
+                    <div class="total-title">Total</div>
+                    <div class="total-price">Q0</div>
+                </div>
+                <button type="button" class="btn-buy">Comprar</button>
+                <i class='bx bx-x' id="close-cart"></i>
+
+            </div>
+        </div>
+    </header>
+    <section class="shop container">
+        <h2 class="section-title">Todos los Productos</h2>
+        <div id="idshop-content" class="shop-content">
+            <!--  
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)" src="https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/b888f601abe04096baadac08011583ad_9366/adilette-sandals.jpg" alt="" class="product-img">
+                <h2 class="product-title">Adilette Sandals</h2>
+                <span class="price">$28</span>&nbsp;&nbsp; 
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/3950180d2b2f4f5db929aeca0101e59e_9366/COLLEGIATE_SKIRT_Beige_IA8352_21_model.jpg" alt="" class="product-img">
+                <h2 class="product-title">COLLEGIATE SKIRT</h2>
+                <span class="price">$60</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/2834ac907d9945849c82ab5601200e32_9366/trefoil-quarter-socks-6-pairs.jpg" alt="" class="product-img">
+                <h2 class="product-title">Trefoil Quarter Socks 6 Pairs</h2>
+                <span class="price">$20</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/d48847cf7c4f4255bf9eae010077fc33_9366/adidas_x_Peloton_jacket_Black_HG7894_21_model.jpg" alt="" class="product-img">
+                <h2 class="product-title">adidas x Peloton jacket</h2>
+                <span class="price">$80</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/ab6108b3bd704dc39aecaed90099cc03_9366/ANNIVERSARY_TRACKSUIT_PANTS_(GENDER_NEUTRAL)_Beige_IA8349_21_model.jpg" alt="" class="product-img">
+                <h2 class="product-title">ANNIVERSARY TRACKSUIT PANTS (GENDER NEUTRAL)</h2>
+                <span class="price">$90</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/3aeff82d23d441318badae9400a1a527_9366/NMD_V3_Shoes_White_GY6818_01_standard.jpg" alt="" class="product-img">
+                <h2 class="product-title">NMD_V3 Shoes</h2>
+                <span class="price">$160</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/14eb0bc0637b4b21b891ae08007f4013_9366/Capable_of_Greatness_7-8_Tights_Black_HG7891_21_model.jpg" alt="" class="product-img">
+                <h2 class="product-title">Capable of Greatness 7/8 Tights</h2>
+                <span class="price">$75</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/a1cfc2c1bcf446478c54ae8800e4a5df_9366/Dust_Coat_(Gender_Neutral)_Black_HG2075_21_model.jpg" alt="" class="product-img">
+                <h2 class="product-title">Dust Coat (Gender Neutral)</h2>
+                <span class="price">$160</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/9164bea8e1cf46e29005ae8c013234e1_9366/Adilette_Slides_Black_HR0096_01_standard.jpg" alt="" class="product-img">
+                <h2 class="product-title">Adilette Slides</h2>
+                <span class="price">$45</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+         
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/944ae015af53405592c0aed7017afc2b_9366/adidas_x_LEGO(r)_Sport_Pro_Shoes_Black_HP2115_01_standard.jpg" alt="" class="product-img">
+                <h2 class="product-title">adidas x LEGO® Sport Pro Shoes</h2>
+                <span class="price">$85</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+    
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/b2d243f16c384ba0a70dae37016d6a45_9366/Ultraboost_19.5_DNA_Shoes_Black_GW8773_01_standard.jpg" alt="" class="product-img">
+                <h2 class="product-title">Ultraboost 19.5 DNA Shoes</h2>
+                <span class="price">$190</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+           
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_600,f_auto,q_auto/33fb19d5f69541d68a42ae0100731f8a_9366/adidas_x_Peloton_jacket_Blue_HG1525_21_model.jpg" alt="" class="product-img">
+                <h2 class="product-title">adidas x Peloton jacket</h2>
+                <span class="price">$80</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+        
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/c7713ef49d724ff99883aa26013c775d_9366/joggers.jpg" alt="" class="product-img">
+                <h2 class="product-title">Capable of Greatness Joggers</h2>
+                <span class="price">$75</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+           
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_280,h_280,f_auto,q_auto:sensitive/21a66459282c4aec918baebc0070f8a2_9366/nmd_v3-shoes.jpg" alt="" class="product-img">
+                <h2 class="product-title">NMD_V3 Shoes</h2>
+                <span class="price">$160</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+         
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_766,h_766,f_auto,q_auto,fl_lossy,c_fill,g_auto/22032c803c8940c1a4d3adc5016d66c5_9366/hoops-3.0-mid-classic-vintage-shoes.jpg" alt="" class="product-img">
+                <h2 class="product-title">Hoops 3.0 Mid Classic Vintage Shoes</h2>
+                <span class="price">$70</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>
+       
+            <div class="product-box">
+                <img draggable="true" ondragstart="drag(event)"  src="https://assets.adidas.com/images/w_766,h_766,f_auto,q_auto,fl_lossy,c_fill,g_auto/a498dcec946d4f1e8dc7ac8b0120b7a3_9366/adidas-by-stella-mccartney-treino-mid-cut-shoes.jpg" alt="" class="product-img">
+                <h2 class="product-title">adidas by Stella McCartney Treino Mid-Cut Shoes</h2>
+                <span class="price">$120</span>
+                <i class='bx bx-shopping-bag add-cart'></i>
+            </div>-->
+        </div>
+    </section>
+    <script src="js/main.js"></script>
+</body>
+</html>
